@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 # 执行打包命令，把前端代码编译成 dist 文件夹
-RUN npm run build
+RUN npm run build:prod
 
 # === 第二阶段：使用 Nginx 托管静态文件 ===
 FROM nginx:alpine
