@@ -9,7 +9,7 @@ interface BackendErrorResponse {
 }
 
 const request = axios.create({
-  baseURL: '/api', // 请确保 vite.config.ts 中配置了代理[cite: 2]
+  baseURL: import.meta.env.VITE_API_BASE_URL,// 请确保 vite.config.ts 中配置了代理[cite: 2]
   timeout: 10000,
 });
 
