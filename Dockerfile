@@ -1,23 +1,16 @@
-# 1. 使用官方的 Node.js 作为基础镜像
-FROM node:20-alpine
-
-# 2. 设置容器内的默认工作目录
+# === 第一阶段：编译打包 ===
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# 3. 复制依赖文件到容器中
 COPY package*.json ./
-
-# 4. 安装项目依赖
 RUN npm install
-
-# 5. 复制项目的所有源代码到容器中
 COPY . .
+# 执行打包命令，把前端代码编译成 dist 文件夹
+RUN npm run build
 
-# 6. 如果是 NestJS/TypeScript 项目，执行打包编译命令（如果是纯 JS 可以省略）
-RUN npm run dev
-
-# 7. 暴露项目在容器内运行的端口（假设你的代码里监听的是 3000）
-EXPOSE 3000
-
-# 8. 容器启动时执行的最终命令
-CMD ["npm", "run", "dev"]
+# === 第二阶段：使用 Nginx 托管静态文件 ===
+FROM nginx:alpine
+# 将第一阶段打包好的 dist 目录，复制到 Nginx 的默认网页目录下
+COPY --from=builder /app/dist /usr/share/nginx/html
+# 暴露 80 端口（容器内部）
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
