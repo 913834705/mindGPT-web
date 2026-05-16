@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@layer base {
+  body {
+    @apply bg-[#0a0a0f] text-gray-200 antialiased overflow-hidden;
+  }
+}
+
+/* 自定义深色滚动条 */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-purple-500/30 transition-colors;
+}
+
+/* 呼吸灯动画 */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
