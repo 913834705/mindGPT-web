@@ -30,11 +30,11 @@ jobs:
       - name: Copy dist to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.HOSTAPI }}
+          username: ${{ secrets.HOSTUSER1 }}
+          key: ${{ secrets.KEYWEB }}
           source: "dist"
-          target: "/home/${{ secrets.EC2_USER }}/mindgpt-frontend"
+          target: "/home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend"
       
       # 6. 在 EC2 上部署到 Nginx
       - name: Deploy to Nginx
@@ -47,26 +47,26 @@ jobs:
             echo "🚀 Starting deployment..."
             
             # 备份旧的部署文件
-            if [ -d "/home/${{ secrets.EC2_USER }}/nginx-html" ]; then
+            if [ -d "/home/${{ secrets.HOSTUSER1 }}/nginx-html" ]; then
               echo "Backing up old files..."
-              cp -r /home/${{ secrets.EC2_USER }}/nginx-html /home/${{ secrets.EC2_USER }}/nginx-html.backup
+              cp -r /home/${{ secrets.HOSTUSER1 }}/nginx-html /home/${{ secrets.HOSTUSER1 }}/nginx-html.backup
             fi
             
             # 创建 Nginx 静态文件目录
-            mkdir -p /home/${{ secrets.EC2_USER }}/nginx-html
+            mkdir -p /home/${{ secrets.HOSTUSER1 }}/nginx-html
             
             # 复制新的构建文件到 Nginx 目录
             echo "Copying new files..."
-            cp -r /home/${{ secrets.EC2_USER }}/mindgpt-frontend/dist/* /home/${{ secrets.EC2_USER }}/nginx-html/
+            cp -r /home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend/dist/* /home/${{ secrets.HOSTUSER1 }}/nginx-html/
             
             # 重新加载 Nginx 配置
             echo "Reloading Nginx..."
             sudo nginx -t && sudo nginx -s reload
             
             # 清理备份（保留最近一次）
-            rm -rf /home/${{ secrets.EC2_USER }}/nginx-html.backup
+            rm -rf /home/${{ secrets.HOSTUSER1 }}/nginx-html.backup
             
             # 清理临时上传目录
-            rm -rf /home/${{ secrets.EC2_USER }}/mindgpt-frontend
+            rm -rf /home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend
             
             echo "✅ Deployment completed!"
