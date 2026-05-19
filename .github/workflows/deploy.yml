@@ -40,9 +40,9 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.HOSTAPI }}
+          username: ${{ secrets.HOSTUSER1 }}
+          key: ${{ secrets.KEYWEB }}
           script: |
             # 检查并重启正确的服务
             if command -v nginx &> /dev/null; then
