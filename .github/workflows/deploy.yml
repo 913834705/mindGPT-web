@@ -2,12 +2,12 @@ name: Deploy Frontend to EC2
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       # 1. 拉取代码
       - uses: actions/checkout@v4
@@ -16,16 +16,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       # 3. 安装依赖
       - name: Install dependencies
         run: npm ci
-      
+
       # 4. 构建生产版本
       - name: Build production
         run: npm run build:prod
-      
+
       # 5. 将打包文件传输到 EC2
       - name: Copy dist to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -35,15 +35,15 @@ jobs:
           key: ${{ secrets.KEYWEB }}
           source: "dist"
           target: "/home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend"
-      
+
       # 6. 在 EC2 上部署到 Nginx
       - name: Deploy to EC2
-  uses: appleboy/ssh-action@v1.0.3
-  with:
-    host: ${{ secrets.EC2_HOST }}
-    username: ${{ secrets.EC2_USERNAME }}
-    key: ${{ secrets.EC2_SSH_KEY }}
-    script: |
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTAPI }}
+          username: ${{ secrets.HOSTUSER1 }}
+          key: ${{ secrets.KEYWEB }}
+          script: |
       # 检查并重启正确的服务
       if command -v nginx &> /dev/null; then
         sudo nginx -t && sudo systemctl reload nginx
@@ -53,6 +53,6 @@ jobs:
         echo "⚠️ No web server found, checking port 80..."
         sudo lsof -i :80
       fi
-      
+
       # 或者如果用的是 Python HTTP 服务器，需要重启进程
       # pkill -f "python.*http.server" || true
