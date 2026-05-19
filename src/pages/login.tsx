@@ -51,7 +51,7 @@ const Login: React.FC = () => {
         {/* Header */}
         <div>
           <h2 className="mt-2 text-center text-3xl font-extrabold text-white tracking-tight">
-            {isLoginView ? '欢迎回来！' : '开启新旅程！！'}
+            {isLoginView ? '欢迎回来！!' : '开启新旅程！！'}
           </h2>
           <p className="mt-3 text-center text-sm text-purple-200/60">
             {isLoginView ? '请登录以继续探索系统' : '填写以下信息加入我们'}
