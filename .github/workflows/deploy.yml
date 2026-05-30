@@ -26,33 +26,36 @@ jobs:
       - name: Build production
         run: npm run build:prod
 
-      # 5. 将打包文件传输到 EC2
-      - name: Copy dist to EC2
+      # 5. 将打包文件传输到 EC2 的用户家目录（作为一个临时中转）
+      - name: Copy dist to EC2 Temporary Dir
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOSTAPI }}
           username: ${{ secrets.HOSTUSER1 }}
           key: ${{ secrets.KEYWEB }}
-          source: "dist"
-          target: "/home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend"
+          source: "dist/*"
+          strip_components: 1
+          target: "/home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend-temp"
 
-      # 6. 在 EC2 上部署到 Nginx
-      - name: Deploy to EC2
+      # 6. 将中转文件强行推入 Docker 容器内部
+      - name: Copy Files Into Docker Container
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOSTAPI }}
           username: ${{ secrets.HOSTUSER1 }}
           key: ${{ secrets.KEYWEB }}
           script: |
-            # 检查并重启正确的服务
-            if command -v nginx &> /dev/null; then
-              sudo nginx -t && sudo systemctl reload nginx
-            elif command -v apache2 &> /dev/null; then
-              sudo systemctl reload apache2
-            else
-              echo "⚠️ No web server found, checking port 80..."
-              sudo lsof -i :80
-            fi
+            TEMP_DIR="/home/${{ secrets.HOSTUSER1 }}/mindgpt-frontend-temp"
+            CONTAINER_NAME="mindgpt-frontend"
             
-            # 或者如果用的是 Python HTTP 服务器，需要重启进程
-            # pkill -f "python.*http.server" || true
+            echo "正在将新网页文件复制进 Docker 容器 ($CONTAINER_NAME) 内部..."
+            # 使用 docker cp 直接把宿主机的临时文件拷贝到容器内部的 Nginx 目录
+            sudo docker cp $TEMP_DIR/. $CONTAINER_NAME:/usr/share/nginx/html/
+            
+            echo "清空宿主机临时缓存..."
+            rm -rf $TEMP_DIR
+            
+            echo "让容器内的 Nginx 重新加载配置..."
+            sudo docker exec $CONTAINER_NAME nginx -s reload
+            
+            echo "✅ 部署完成！"
